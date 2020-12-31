@@ -14,6 +14,7 @@ from PIL import Image, ExifTags
 from torch.utils.data import Dataset
 from tqdm import tqdm
 
+
 from utils.general import xyxy2xywh, xywh2xyxy, torch_distributed_zero_first
 
 help_url = 'https://github.com/ultralytics/yolov5/wiki/Train-Custom-Data'
@@ -159,7 +160,9 @@ class LoadImages:  # for inference
                     ret_val, img0 = self.cap.read()
 
             self.frame += 1
-            print('video %g/%g (%g/%g) %s: ' % (self.count + 1, self.nf, self.frame, self.nframes, path), end='')
+            self.pbar.update(1)
+            # self.pbar.refresh()
+            # print(self.frame,self.nframes)
 
         else:
             # Read image
@@ -182,6 +185,8 @@ class LoadImages:  # for inference
         self.frame = 0
         self.cap = cv2.VideoCapture(path)
         self.nframes = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.pbar = tqdm(range(self.nframes))
+        self.pbar.update(1)
 
     def __len__(self):
         return self.nf  # number of files
@@ -269,13 +274,13 @@ class LoadStreams:  # multiple IP or RTSP cameras
         for i, s in enumerate(sources):
             # Start the thread to read frames from the video stream
             print('%g/%g: %s... ' % (i + 1, n, s), end='')
-            cap = cv2.VideoCapture(eval(s) if s.isnumeric() else s)
-            assert cap.isOpened(), 'Failed to open %s' % s
-            w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-            h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            fps = cap.get(cv2.CAP_PROP_FPS) % 100
-            _, self.imgs[i] = cap.read()  # guarantee first frame
-            thread = Thread(target=self.update, args=([i, cap]), daemon=True)
+            self.cap = cv2.VideoCapture(eval(s) if s.isnumeric() else s)
+            assert self.cap.isOpened(), 'Failed to open %s' % s
+            w = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            h = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            fps = self.cap.get(cv2.CAP_PROP_FPS) % 100
+            _, self.imgs[i] = self.cap.read()  # guarantee first frame
+            thread = Thread(target=self.update, args=([i, self.cap]), daemon=True)
             print(' success (%gx%g at %.2f FPS).' % (w, h, fps))
             thread.start()
         print('')  # newline
@@ -289,12 +294,12 @@ class LoadStreams:  # multiple IP or RTSP cameras
     def update(self, index, cap):
         # Read next stream frame in a daemon thread
         n = 0
-        while cap.isOpened():
+        while self.cap.isOpened():
             n += 1
-            # _, self.imgs[index] = cap.read()
-            cap.grab()
+            # _, self.imgs[index] = self.cap.read()
+            self.cap.grab()
             if n == 4:  # read every 4th frame
-                _, self.imgs[index] = cap.retrieve()
+                _, self.imgs[index] = self.cap.retrieve()
                 n = 0
             time.sleep(0.01)  # wait time
 
@@ -306,6 +311,7 @@ class LoadStreams:  # multiple IP or RTSP cameras
         self.count += 1
         img0 = self.imgs.copy()
         if cv2.waitKey(1) == ord('q'):  # q to quit
+            self.cap.release()
             cv2.destroyAllWindows()
             raise StopIteration
 

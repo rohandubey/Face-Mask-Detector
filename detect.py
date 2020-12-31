@@ -4,10 +4,13 @@ import shutil
 import time
 from pathlib import Path
 import sys
+import os
 import cv2
+import tkinter
 import torch
 import torch.backends.cudnn as cudnn
 from numpy import random
+from datetime import datetime
 
 from models.experimental import attempt_load
 from utils.datasets import LoadStreams, LoadImages
@@ -17,7 +20,8 @@ from utils.general import (
 from utils.torch_utils import select_device, load_classifier, time_synchronized
 
 
-def detect(save_img=False):
+def detect(opt):
+    save_img=False
     out, source, weights, view_img, save_txt, imgsz = \
         opt.save_dir, opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size
     webcam = source.isnumeric() or source.startswith(('rtsp://', 'rtmp://', 'http://')) or source.endswith('.txt')
@@ -25,6 +29,7 @@ def detect(save_img=False):
     # Initialize
     set_logging()
     device = select_device(opt.device)
+    flag = False
     if os.path.exists(out):  # output dir
         shutil.rmtree(out)  # delete dir
     os.makedirs(out)  # make new dir
@@ -55,7 +60,8 @@ def detect(save_img=False):
 
     # Get names and colors
     names = model.module.names if hasattr(model, 'module') else model.names
-    colors = [[0,0,255],[0, 255, 0],[0, 128, 0],[0, 0, 255]]
+    names[0],names[1] = names[1],names[0]
+    colors = [[0,0,255],[0, 255, 0]]
 
     # Run inference
     t0 = time.time()
@@ -82,24 +88,24 @@ def detect(save_img=False):
 
         # Process detections
         for i, det in enumerate(pred):  # detections per image
+            flag = False
             if webcam:  # batch_size >= 1
-                p, s, im0 = path[i], '%g: ' % i, im0s[i].copy()
+                p, s, im0 = path[i], ' ', im0s[i].copy()
             else:
                 p, s, im0 = path, '', im0s
 
             save_path = str(Path(out) / Path(p).name)
             txt_path = str(Path(out) / Path(p).stem) + ('_%g' % dataset.frame if dataset.mode == 'video' else '')
-            s += '%gx%g ' % img.shape[2:]  # print string
             gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
             if det is not None and len(det):
                 # Rescale boxes from img_size to im0 size
                 det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
-
                 # Print results
                 for c in det[:, -1].unique():
                     n = (det[:, -1] == c).sum()  # detections per class
-                    s += '%g %ss, ' % (n, names[int(c)])  # add to string
-
+                    s += '%ss : %g,     ' % (names[int(c)],n)  # add to string
+                    if(names[int(c)]=='without_mask'):
+                        flag = True
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
                     if save_txt:  # Write to file
@@ -113,13 +119,27 @@ def detect(save_img=False):
                         plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=3)
 
             # Print time (inference + NMS)
-            print('%sDone. (%.3fs)' % (s, t2 - t1))
-
+            now = datetime.now()
+            dt_string = now.strftime("%d-%b-%y %H:%M:%S")
+            dt_folder = now.strftime("%d-%b-%y")
+            dt_file = now.strftime("%H:%M:%S")
+            # if (s != ' '):
+            #     print(dt_string,"   ",(s))
+            try:
+                os.makedirs("inference/data/"+dt_folder)
+            except FileExistsError:
+                # directory already exists
+                pass
             # Stream results
             if view_img:
+                # im0 = cv2.resize(im0,(1120,840))
+                if(flag):
+                    cv2.imwrite(str("inference/data/"+dt_folder+"/"+dt_folder+" "+dt_file+".png"),im0)
                 cv2.imshow(p, im0)
-                if cv2.waitKey(1) == ord('q'):  # q to quit
-                    sys.exit()
+                # if cv2.waitKey(1) == ord('q'):  # q to quit
+                #     cv2.VideoCapture(source).release()
+                #     cv2.destroyAllWindows()
+                #     return
 
             # Save results (image with detections)
             if save_img:
@@ -138,19 +158,19 @@ def detect(save_img=False):
                         vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*fourcc), fps, (w, h))
                     vid_writer.write(im0)
 
-    if save_txt or save_img:
-        print('Results saved to %s' % Path(out))
+    # if save_txt or save_img:
+    #     print('Results saved to %s' % Path(out))
 
-    print('Done. (%.3fs)' % (time.time() - t0))
+    # print('Done. (%.3fs)' % (time.time() - t0))
 
 
-if __name__ == '__main__':
+def run_function (lista):
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights', nargs='+', type=str, default='best.pt', help='model.pt path(s)')
-    parser.add_argument('--source', type=str, default='inference/images', help='source')  # file/folder, 0 for webcam
+    parser.add_argument('--source', type=str, default='1', help='source')  # file/folder, 0 for webcam
     parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
-    parser.add_argument('--conf-thres', type=float, default=0.4, help='object confidence threshold')
-    parser.add_argument('--iou-thres', type=float, default=0.45, help='IOU threshold for NMS')
+    parser.add_argument('--conf-thres', type=float, default=0.5, help='object confidence threshold')
+    parser.add_argument('--iou-thres', type=float, default=0.30, help='IOU threshold for NMS')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--view-img', action='store_true', help='display results')
     parser.add_argument('--save-txt', action='store_true', help='save results to *.txt')
@@ -160,8 +180,9 @@ if __name__ == '__main__':
     parser.add_argument('--agnostic-nms', action='store_true', help='class-agnostic NMS')
     parser.add_argument('--augment', action='store_true', help='augmented inference')
     parser.add_argument('--update', action='store_true', help='update all models')
-    opt = parser.parse_args()
-    print(opt)
+    opt=parser.parse_args(lista)
+    # opt = parser.parse_args()
+    # print(opt)
 
     with torch.no_grad():
         if opt.update:  # update all models (to fix SourceChangeWarning)
@@ -169,4 +190,4 @@ if __name__ == '__main__':
                 detect()
                 strip_optimizer(opt.weights)
         else:
-            detect()
+            detect(opt)
