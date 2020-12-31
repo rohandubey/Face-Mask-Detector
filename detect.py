@@ -120,9 +120,9 @@ def detect(opt):
 
             # Print time (inference + NMS)
             now = datetime.now()
-            dt_string = now.strftime("%d-%b-%y %H:%M:%S")
-            dt_folder = now.strftime("%d-%b-%y")
-            dt_file = now.strftime("%H:%M:%S")
+            dt_string = now.strftime("%d_%b_%y %H_%M_%S")
+            dt_folder = now.strftime("%d_%b_%y")
+            dt_file = now.strftime("%H_%M_%S")
             # if (s != ' '):
             #     print(dt_string,"   ",(s))
             try:
@@ -134,7 +134,7 @@ def detect(opt):
             if view_img:
                 # im0 = cv2.resize(im0,(1120,840))
                 if(flag):
-                    cv2.imwrite(str("inference/data/"+dt_folder+"/"+dt_folder+" "+dt_file+".png"),im0)
+                    cv2.imwrite("inference\\data\\"+dt_folder +"\\"+dt_string +".png",im0)
                 cv2.imshow(p, im0)
                 # if cv2.waitKey(1) == ord('q'):  # q to quit
                 #     cv2.VideoCapture(source).release()
@@ -166,10 +166,10 @@ def detect(opt):
 
 def run_function (lista):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--weights', nargs='+', type=str, default='best.pt', help='model.pt path(s)')
+    parser.add_argument('--weights', nargs='+', type=str, default='files\\best2.pt', help='model.pt path(s)')
     parser.add_argument('--source', type=str, default='1', help='source')  # file/folder, 0 for webcam
     parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
-    parser.add_argument('--conf-thres', type=float, default=0.5, help='object confidence threshold')
+    parser.add_argument('--conf-thres', type=float, default=0.6, help='object confidence threshold')
     parser.add_argument('--iou-thres', type=float, default=0.30, help='IOU threshold for NMS')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--view-img', action='store_true', help='display results')
