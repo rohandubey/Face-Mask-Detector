@@ -56,7 +56,7 @@ $ tree --dirsfirst
 ```
 ***Demo Pic form Live Stream*** <br>
 <img src="source/result_pic.png" width="700"> <br>
-[***Demo Video form YouTube*** <br>](https://drive.google.com/file/d/1DfX1nSEcgMyTUz4v5BD5aRJU7cykBWzn/view?usp=sharing) Click to open!
+[***Demo Video from YouTube*** <br>](https://drive.google.com/file/d/1DfX1nSEcgMyTUz4v5BD5aRJU7cykBWzn/view?usp=sharing) Click to open!
 
 ## Built With
 * YOLOv5 - Object Detection Algorithm
