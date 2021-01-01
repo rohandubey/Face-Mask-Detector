@@ -46,7 +46,7 @@ For Live streams from Webcam or WebStream (ex. `http://ip`), all images without 
 $ tree --dirsfirst
 ├── inference\data\
 
-│	├── 21_Dec_20                   (folder name = date)
+│	├── 21_Dec_20                    (folder name = date)
    	├── 21_Dec_20 15_28_54.png    (time is 15:28:54)
    	└── 21_Dec_20 12_20_05.png
 ...	│   ...
