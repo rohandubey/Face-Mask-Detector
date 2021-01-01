@@ -47,12 +47,12 @@ $ tree --dirsfirst
 ├── inference\data\
 
 │	├── 21_Dec_20                   (folder name = date)
-   	└── 21_Dec_20 15_28_54.png    (time is 15:28:54)
-   	├── 21_Dec_20 12_20_05.png
+   	├── 21_Dec_20 15_28_54.png    (time is 15:28:54)
+   	└── 21_Dec_20 12_20_05.png
 ...	│   ...
 │	├── 22_Dec_20
-   	└── 22_Dec_20 05_08_04.png    
-   	├── 22_Dec_20 02_00_55.png
+   	├── 22_Dec_20 05_08_04.png    
+   	└── 22_Dec_20 02_00_55.png
 ```
 ***Demo Pic form Live Stream*** <br>
 <img src="source/result_pic.png" width="700"> <br>
