@@ -3,7 +3,7 @@ coremltools==4.0b3
 tqdm==4.51.0
 pandas==1.1.4
 torchvision==0.8.1
-numpy==1.19.4
+numpy==1.21.0
 thop==0.0.31.post2005241907
 scipy==1.5.4
 seaborn==0.11.0
