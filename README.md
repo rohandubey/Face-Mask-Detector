@@ -4,7 +4,6 @@
 ![pypi](https://img.shields.io/pypi/v/torch)
 ![versions](https://img.shields.io/badge/python-3.8%2B-blue)
 [![PyPI status](https://img.shields.io/pypi/status/trains-jupyter-plugin.svg)](https://pypi.python.org/pypi/trains-jupyter-plugin/) 
-![CI CPU testing](https://github.com/ultralytics/yolov5/workflows/CI%20CPU%20testing/badge.svg)
 <br></br>
 In the amidst of COVID-19, as there is no proper channel to effectively monitor people wearing mask and not. So to tackle this problem, I made an AI solution based on YOLOv5 model to detect those who are **not wearing mask**. This software is tested by Rajasthan Police (Govt. of India), and is designed to be installed alongside their CCTVs for efficient working. This software can **multi-stream** many sources together and collects data contionuously from those streams.
 Based on **YOLOv5** model and **RetinaNet Architecture**, having <br>
